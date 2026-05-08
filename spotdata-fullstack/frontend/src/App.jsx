@@ -236,3 +236,65 @@ function TextSection({ onResult, toast }) {
     </div>
   );
 }
+
+// ── SearchSection ───────────────────────────────────────────────────────────────
+
+function SearchSection({ onResult, toast }) {
+const [query, setQuery] = useState("");
+const [nResults, setNResults] = useState(5);
+const [loading, setLoading] = useState(false);
+
+const submit = async () => {
+if (!query.trim()) { toast("Query vazia", "error"); return; }
+setLoading(true);
+try {
+const res = await searchDocuments(query.trim(), nResults);
+if (!res.results.length) {
+onResult(`Nenhum resultado encontrado para <strong>"${query}"</strong>. Tente outros termos.`);
+return;
+}
+const cards = res.results.map((r, i) => {
+const typeClass = r.content_type?.toLowerCase() === "pdf" ? "b-purple" : r.content_type?.toLowerCase() === "foto" ? "b-amber" : "b-teal";
+const typeLabel = { pdf: "PDF", foto: "IMG", texto: "TXT" }[r.content_type?.toLowerCase()] || "?";
+return `<div class="result-card">
+<div class="rc-header">
+<span class="badge ${typeClass}">${typeLabel}</span>
+<span class="rc-source">${r.source_name || "—"}</span>
+<span class="rc-dist">dist ${r.distance?.toFixed(4)}</span>
+</div>
+<div class="rc-excerpt">${r.document}</div>
+</div>`;
+}).join("");
+onResult(`Encontrei <strong>${res.results.length} resultado${res.results.length !== 1 ? "s" : ""}</strong> para <strong>"${query}"</strong>:\n<div class="results-list">${cards}</div>`);
+setQuery("");
+} catch (e) {
+toast(e.message, "error");
+} finally {
+setLoading(false);
+}
+};
+
+return (
+<div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+<input
+className="input"
+placeholder="o que você quer encontrar?"
+value={query}
+onChange={(e) => setQuery(e.target.value)}
+onKeyDown={(e) => e.key === "Enter" && submit()}
+style={{ flex: 1 }}
+/>
+<select
+className="input"
+value={nResults}
+onChange={(e) => setNResults(Number(e.target.value))}
+style={{ width: "64px" }}
+>
+{[3, 5, 10].map((n) => <option key={n}>{n}</option>)}
+</select>
+<button className="send-btn" onClick={submit} disabled={loading} style={{ borderRadius: "8px" }}>
+{loading ? <span className="spinner" /> : "🔍"}
+</button>
+</div>
+);
+}
