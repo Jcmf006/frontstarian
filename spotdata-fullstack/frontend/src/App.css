@@ -1,3 +1,56 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:             #0E0E0F;
+  --surface:        #161618;
+  --surface2:       #1E1E21;
+  --surface3:       #26262A;
+
+  --border:         rgba(255, 255, 255, 0.07);
+  --border2:        rgba(255, 255, 255, 0.12);
+  --border3:        rgba(255, 255, 255, 0.18);
+
+  --text:           #F0EFE8;
+  --muted:          #888785;
+  --hint:           #555452;
+
+  --accent:         #7F77DD;
+  --accent2:        #5DCAA5;
+  --accent-glow:    rgba(127, 119, 221, 0.18);
+  --accent2-glow:   rgba(93, 202, 165, 0.15);
+
+  --user-bubble:        #2A2A6E;
+  --user-bubble-border: rgba(127, 119, 221, 0.35);
+
+  --r:    12px;
+  --r-sm:  8px;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+}
+
+textarea,
+input {
+  font-family: inherit;
+}
+
 /* ── Layout ─────────────────────────────────────────────────────────────── */
 .app {
   min-height: 100vh;
