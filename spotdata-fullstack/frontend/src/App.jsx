@@ -192,3 +192,47 @@ function UploadSection({ onResult, toast }) {
     </div>
   );
 }
+
+// ── TextSection ───────────────────────────────────────────────────────────────
+
+function TextSection({ onResult, toast }) {
+  const [text, setText] = useState("");
+  const [sourceName, setSourceName] = useState("texto-direto");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    if (!text.trim()) { toast("Texto vazio", "error"); return; }
+    setLoading(true);
+    try {
+      const res = await ingestText(text.trim(), sourceName || "texto-direto");
+      onResult('Texto indexado com sucesso!\n\nID: <strong>${res.id.slice(0, 8)}…</strong> · fonte: <strong>${sourceName}</strong>. Quer fazer uma busca agora?');
+      setText("");
+    } catch (e) {
+      toast(e.message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+      <textarea
+        className="input"
+        placeholder="Cole ou digite o texto a ser indexado…"
+        rows={5}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        style={{ resize: "vertical", lineHeight: "1.6" }}
+      />
+      <input
+        className="input"
+        placeholder="nome da fonte"
+        value={sourceName}
+        onChange={(e) => setSourceName(e.target.value)}
+      />
+      <button className="send-btn" style={{ width: "100%", borderRadius: "8px", padding: "10px", fontSize: "13px" }} onClick={submit} disabled={loading || !text.trim()}>
+        {loading ? "indexando…" : "indexar texto"}
+      </button>
+    </div>
+  );
+}
