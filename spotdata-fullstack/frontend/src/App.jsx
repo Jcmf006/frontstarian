@@ -71,3 +71,43 @@ function Topbar({ title, apiStatus }) {
     </div>
   );
 }
+
+function Messages({ messages }) {
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  return (
+    <div className="messages">
+      {messages.map((msg) => (
+        <div key={msg.id} className={`msg ${msg.role}`}>
+          <div className={`msg-avatar ${msg.role === "user" ? "uav" : "ai"}`}>
+            {msg.role === "user" ? "RF" : "SD"}
+          </div>
+          <div
+            className="bubble"
+            dangerouslySetInnerHTML={{ __html: msg.content }}
+          />
+        </div>
+      ))}
+      <div ref={bottomRef} />
+    </div>
+  );
+}
+
+// ── Typing indicator ─────────────────────────────────────────────────────────
+
+function TypingIndicator() {
+  return (
+    <div className="msg ai">
+      <div className="msg-avatar ai">SD</div>
+      <div className="bubble">
+        <div className="typing">
+          <span /><span /><span />
+        </div>
+      </div>
+    </div>
+  );
+}
