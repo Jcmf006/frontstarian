@@ -111,3 +111,84 @@ function TypingIndicator() {
     </div>
   );
 }
+
+// ── UploadSection ─────────────────────────────────────────────────────────
+
+function UploadSection({ onResult, toast }) {
+  const [file, setFile] = useState(null);
+  const [sourceName, setSourceName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [drag, setDrag] = useState(false);
+  const inputRef = useRef();
+
+  const handleFile = (f) => {
+    if (!f) return;
+    setFile(f);
+    if (!sourceName) setSourceName(f.name);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDrag(false);
+    handleFile(e.dataTransfer.files[0]);
+  }; 
+
+  const submit = async () => {
+    if (!file) { toast("Selecione um arquivo", "error"); return; }
+    setLoading(true);
+    try {
+      const res = await uploadFile(file, sourceName || file.name);
+      onResult(`Arquivo <strong>${file.name}</strong> indexado com sucesso!\n\nID: <strong>${res.id.slice(0, 8)}…</strong> · fonte registrada. Quer fazer uma busca agora?`);
+      setFile(null);
+      setSourceName("");
+    } catch (e) {
+      toast(e.message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+      <div
+        className={`dropzone ${drag ? "dropzone--active" : ""} ${file ? "dropzone--filled" : ""}`}
+        onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+        onDragLeave={() => setDrag(false)}
+        onDrop={handleDrop}
+        onClick={() => inputRef.current.click()}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".pdf,.png,.jpg,.jpeg,.bmp,.tiff,.txt"
+          style={{ display: "none" }}
+          onChange={(e) => handleFile(e.target.files[0])}
+        />
+        {file ? (
+          <div className="dropzone-file">
+            <span>📄</span>
+            <span className="dropzone-filename">{file.name}</span>
+            <span className="dropzone-size">{(file.size / 1024).toFixed(1)} KB</span>
+          </div>
+        ) : (
+          <div className="dropzone-placeholder">
+            <span className="dropzone-hint">arraste ou clique para selecionar</span>
+            <span className="dropzone-types">PDF · PNG · JPG · TXT</span>
+          </div>
+        )}
+      </div>
+
+      <input
+        className="input"
+        placeholder="nome da fonte (ex: relatorio-q1.pdf)"
+        value={sourceName}
+        onChange={(e) => setSourceName(e.target.value)}
+      />
+
+      <button className="send-btn" style={{ width: "100%", borderRadius: "8px", padding: "10px", fontSize: "13px" }} onClick={submit} disabled={loading || !file}>
+        {loading ? <span className="spinner" /> : null}
+        {loading ? "processando…" : "enviar documento"}
+      </button>
+    </div>
+  );
+}
