@@ -1,0 +1,14 @@
+{
+  "name": "spotdata-proxy",
+  "version": "1.0.0",
+  "description": "Proxy Node.js para SpotData FastAPI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "start:all": "concurrently \"node server.js\" \"cd frontend && npm run dev\""
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

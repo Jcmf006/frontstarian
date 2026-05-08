@@ -1,0 +1,62 @@
+:root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --surface-2: #1a1a1a;
+  --border: #252525;
+  --border-hover: #383838;
+  --text: #e8e8e2;
+  --text-muted: #6b6b65;
+  --text-dim: #3a3a35;
+  --accent: #c8f560;
+  --accent-dark: #9bbf40;
+  --accent-glow: rgba(200, 245, 96, 0.12);
+  --red: #f56060;
+  --blue: #60b4f5;
+  --orange: #f5a860;
+  --font-display: "Syne", sans-serif;
+  --font-mono: "DM Mono", monospace;
+  --radius: 6px;
+  --radius-lg: 12px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--accent);
+  color: #0a0a0a;
+}
+
+input, textarea, button {
+  font-family: var(--font-mono);
+}
