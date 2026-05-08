@@ -298,3 +298,232 @@ style={{ width: "64px" }}
 </div>
 );
 }
+// ── useToast ──────────────────────────────────────────────────────────────────
+
+function useToast() {
+  const [toasts, setToasts] = useState([]);
+
+  const add = (message, type = "info") => {
+    const id = Date.now();
+    setToasts((p) => [...p, { id, message, type }]);
+    setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 4000);
+  };
+
+  const remove = (id) => setToasts((p) => p.filter((t) => t.id !== id));
+
+  return { toasts, toast: add, remove };
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+
+function Toast({ toasts, remove }) {
+  return (
+    <div className="toast-container">
+      {toasts.map((t) => (
+        <div key={t.id} className={`toast ${t.type}`}>
+          <span>{t.message}</span>
+          <button onClick={() => remove(t.id)}>×</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Chat logic ────────────────────────────────────────────────────────────────
+
+const INITIAL_CHATS = [
+  { id: 1, title: "Busca relatório Q1" },
+  { id: 2, title: "Upload manual produto" },
+  { id: 3, title: "Indexar dados de vendas" },
+];
+
+const INITIAL_MESSAGE = {
+  id: 0,
+  role: "ai",
+  content: "Olá! Sou o <strong>SpotData</strong>. Posso buscar documentos, indexar textos ou receber uploads de arquivos.<br/><br/>O que você precisa hoje?",
+};
+
+const SUGGESTIONS = [
+  { label: "🔍 buscar documento",  action: "search" },
+  { label: "📄 fazer upload",      action: "upload" },
+  { label: "✏️ indexar texto",     action: "text"   },
+];
+
+function useChatLogic(toast) {
+  const [messages, setMessages]   = useState([INITIAL_MESSAGE]);
+  const [typing, setTyping]       = useState(false);
+  const [mode, setMode]           = useState(null); // "search" | "upload" | "text" | null
+
+  const addMsg = (content, role) => {
+    setMessages((p) => [...p, { id: Date.now() + Math.random(), role, content }]);
+  };
+
+  const aiReply = (content) => {
+    setTyping(true);
+    setTimeout(() => {
+      setTyping(false);
+      addMsg(content, "ai");
+      setMode(null);
+    }, 700);
+  };
+
+  const sendText = (text) => {
+    if (!text.trim()) return;
+    addMsg(`<p>${text}</p>`, "user");
+
+    if (/upload|arquivo|enviar|anexar/i.test(text)) {
+      aiReply("Claro! Use o painel abaixo para selecionar o arquivo:");
+      setMode("upload");
+    } else if (/index|texto|ingest/i.test(text)) {
+      aiReply("Perfeito! Cole o texto abaixo e eu processo pra você:");
+      setMode("text");
+    } else if (/busca|procur|encontr|search/i.test(text)) {
+      aiReply("Tudo certo! Use o campo abaixo para buscar nos documentos indexados:");
+      setMode("search");
+    } else {
+      aiReply(`Não entendi muito bem. Posso <strong>buscar documentos</strong>, <strong>indexar textos</strong> ou receber <strong>uploads</strong>. O que prefere?`);
+    }
+  };
+
+  const onSuggestion = (action) => {
+    const labels = { search: "quero buscar um documento", upload: "quero fazer upload", text: "quero indexar um texto" };
+    sendText(labels[action]);
+  };
+
+  const onResult = (content) => {
+    addMsg(content, "ai");
+    setMode(null);
+  };
+
+  return { messages, typing, mode, sendText, onSuggestion, onResult };
+}
+
+// ── App root ──────────────────────────────────────────────────────────────────
+
+export default function App() {
+  const { toasts, toast, remove } = useToast();
+  const [chats, setChats]         = useState(INITIAL_CHATS);
+  const [activeChat, setActiveChat] = useState(1);
+  const [chatTitle, setChatTitle]   = useState("Busca relatório Q1");
+  const [apiStatus, setApiStatus]   = useState("checking");
+  const [input, setInput]           = useState("");
+  const inputRef                    = useRef();
+
+  const { messages, typing, mode, sendText, onSuggestion, onResult } = useChatLogic(toast);
+
+  useEffect(() => {
+    healthCheck()
+      .then(() => setApiStatus("online"))
+      .catch(() => setApiStatus("offline"));
+  }, []);
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    sendText(input);
+    setInput("");
+    if (inputRef.current) inputRef.current.style.height = "auto";
+  };
+
+  const handleKey = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleNewChat = () => {
+    const id = Date.now();
+    const newChat = { id, title: "Nova conversa" };
+    setChats((p) => [newChat, ...p]);
+    setActiveChat(id);
+    setChatTitle("Nova conversa");
+  };
+
+  const handleSelectChat = (chat) => {
+    setActiveChat(chat.id);
+    setChatTitle(chat.title);
+  };
+
+  const autoResize = (el) => {
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 120) + "px";
+  };
+
+  return (
+    <div className="shell">
+      <Toast toasts={toasts} remove={remove} />
+
+      <Sidebar
+        chats={chats}
+        activeChat={activeChat}
+        onSelectChat={handleSelectChat}
+        onNewChat={handleNewChat}
+        user={{ name: "Rafael", initials: "RF" }}
+      />
+
+      <div className="main">
+        <Topbar title={chatTitle} apiStatus={apiStatus} />
+
+        <Messages messages={messages} />
+
+        {typing && (
+          <div className="msg ai" style={{ padding: "0 24px" }}>
+            <div className="msg-avatar ai">SD</div>
+            <div className="bubble">
+              <div className="typing"><span /><span /><span /></div>
+            </div>
+          </div>
+        )}
+
+        {mode === "search" && (
+          <div style={{ padding: "0 24px 12px" }}>
+            <SearchSection onResult={onResult} toast={toast} />
+          </div>
+        )}
+
+        {mode === "upload" && (
+          <div style={{ padding: "0 24px 12px" }}>
+            <UploadSection onResult={onResult} toast={toast} />
+          </div>
+        )}
+
+        {mode === "text" && (
+          <div style={{ padding: "0 24px 12px" }}>
+            <TextSection onResult={onResult} toast={toast} />
+          </div>
+        )}
+
+        {!mode && (
+          <div className="suggestions">
+            {SUGGESTIONS.map((s) => (
+              <button key={s.action} className="suggestion" onClick={() => onSuggestion(s.action)}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="input-area">
+          <div className="input-bar">
+            <textarea
+              ref={inputRef}
+              rows={1}
+              placeholder="Pergunte algo ou envie um documento…"
+              value={input}
+              onChange={(e) => { setInput(e.target.value); autoResize(e.target); }}
+              onKeyDown={handleKey}
+            />
+            <div className="input-actions">
+              <button className="attach-btn" aria-label="Anexar" onClick={() => onSuggestion("upload")}>
+                📎
+              </button>
+              <button className="send-btn" onClick={handleSend} disabled={!input.trim()} aria-label="Enviar">
+                ↑
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
