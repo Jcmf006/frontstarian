@@ -40,3 +40,34 @@ function Sidebar({ chats, activeChat, onSelectChat, onNewChat, user }) {
     </div>
   );
 }
+
+// ── Topbar ───────────────────────────────────────────────────────────────────
+
+function Topbar({ title, apiStatus }) {
+  return (
+    <div className="topbar">
+      <div className="topbar-left">
+        <span className="topbar-title">{title}</span>
+        <span className="model-badge">chromadb</span>
+        <span
+          className="model-badge"
+          style={{
+            background: apiStatus === "online"
+              ? "rgba(93, 202, 165, 0.12)"
+              : "rgba(224, 75, 74, 0.12)",
+            color: apiStatus === "online" ? "#5DCAA5" : "#F09595",
+            border: apiStatus === "online"
+              ? "0.5px solid rgba(93, 202, 165, 0.25)"
+              : "0.5px solid rgba(224, 75, 74, 0.25)",
+          }}
+        >
+          API {apiStatus}
+        </span>
+      </div>
+      <div className="topbar-actions">
+        <button className="icon-btn" aria-label="Compartilhar">⬆</button>
+        <button className="icon-btn" aria-label="Mais opções">•••</button>
+      </div>
+    </div>
+  );
+}
