@@ -7,14 +7,14 @@
   --text: #e8e8e2;
   --text-muted: #6b6b65;
   --text-dim: #3a3a35;
-  --accent: #c8f560;
-  --accent-dark: #9bbf40;
-  --accent-glow: rgba(200, 245, 96, 0.12);
+  --accent: #9D6EFF;
+  --accent-dark: #7C3AED;
+  --accent-glow: rgba(157, 110, 255, 0.15);
   --red: #f56060;
   --blue: #60b4f5;
   --orange: #f5a860;
-  --font-display: "Syne", sans-serif;
-  --font-mono: "DM Mono", monospace;
+  --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
   --radius: 6px;
   --radius-lg: 12px;
 }
@@ -33,7 +33,7 @@ html {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   min-height: 100vh;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -58,5 +58,5 @@ body {
 }
 
 input, textarea, button {
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
 }

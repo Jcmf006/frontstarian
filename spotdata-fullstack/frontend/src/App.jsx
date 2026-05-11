@@ -14,7 +14,7 @@ function Sidebar({ chats, activeChat, onSelectChat, onNewChat, user }) {
           <span className="brand-ver">v0.1</span>
         </div>
         <button className="new-chat-btn" onClick={onNewChat}>
-          <span>+</span> nova conversa
+          nova conversa
         </button>
       </div>
 

@@ -20,20 +20,20 @@
   --muted:          #888785;
   --hint:           #555452;
 
-  --accent:         #7F77DD;
-  --accent2:        #5DCAA5;
-  --accent-glow:    rgba(127, 119, 221, 0.18);
-  --accent2-glow:   rgba(93, 202, 165, 0.15);
+  --accent:         #9D6EFF;
+  --accent2:        #C084FC;
+  --accent-glow:    rgba(157, 110, 255, 0.2);
+  --accent2-glow:   rgba(192, 132, 252, 0.15);
 
-  --user-bubble:        #2A2A6E;
-  --user-bubble-border: rgba(127, 119, 221, 0.35);
+  --user-bubble:        #1A0B3B;
+  --user-bubble-border: rgba(157, 110, 255, 0.4);
 
   --r:    12px;
   --r-sm:  8px;
 }
 
 body {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 14px;
   color: var(--text);
   background: var(--bg);
@@ -73,6 +73,10 @@ input {
   overflow: hidden;
 }
 
+.sidebar-header {
+  padding: 20px 6px 14px;
+}
+
 .shell {
   display: grid;
   grid-template-columns: 220px 1fr;
@@ -97,7 +101,8 @@ input {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 0 14px;
+  padding: 0 8px 14px;
+  justify-content: center;
 }
 
 .brand-dot {
@@ -129,7 +134,7 @@ input {
   width: 100%;
   padding: 8px 12px;
   border-radius: var(--r-sm);
-  border: 0.5px solid var(--border3);
+  border: 0.5px solid rgba(157, 110, 255, 0.4);
   background: var(--surface3);
   font-size: 13px;
   color: var(--text);
@@ -138,6 +143,7 @@ input {
   align-items: center;
   gap: 8px;
   transition: all 0.15s;
+  text-transform: capitalize;
 }
 
 .new-chat-btn:hover {
@@ -176,13 +182,13 @@ input {
 .chat-item.active {
   background: var(--surface2);
   color: var(--text);
-  border-color: var(--border2);
+  border-color: rgba(157, 110, 255, 0.5);
   font-weight: 500;
 }
 
 .sidebar-footer {
   margin-top: auto;
-  padding: 12px;
+  padding: 19px 12px;
   border-top: 0.5px solid var(--border);
 }
 
@@ -305,7 +311,7 @@ input {
 .tab--active {
   background: var(--accent-glow);
   color: var(--accent);
-  border: 1px solid rgba(200, 245, 96, 0.2);
+  border: 1px solid rgba(157, 110, 255, 0.3);
 }
 
 /* ── Status badge ────────────────────────────────────────────────────────── */
@@ -361,7 +367,7 @@ input {
   border-radius: 20px;
   background: var(--accent-glow);
   color: var(--accent);
-  border: 0.5px solid rgba(127, 119, 221, 0.3);
+  border: 0.5px solid rgba(157, 110, 255, 0.3);
 }
 
 .topbar-actions {
@@ -538,7 +544,7 @@ input {
   width: 100%;
   padding: 8px 12px;
   border-radius: var(--r-sm);
-  border: 0.5px solid var(--border3);
+  border: 0.5px solid rgba(157, 110, 255, 0.4);
   background: var(--surface3);
   font-size: 13px;
   color: var(--text);
@@ -547,6 +553,7 @@ input {
   align-items: center;
   gap: 8px;
   transition: all 0.15s;
+  text-transform: capitalize;
 }
 
 .new-chat-btn:hover {
@@ -585,13 +592,13 @@ input {
 .chat-item.active {
   background: var(--surface2);
   color: var(--text);
-  border-color: var(--border2);
+  border-color: rgba(157, 110, 255, 0.5);
   font-weight: 500;
 }
 
 .sidebar-footer {
   margin-top: auto;
-  padding: 12px;
+  padding: 19px 12px;
   border-top: 0.5px solid var(--border);
 }
 
@@ -627,7 +634,6 @@ input {
   font-size: 13px;
   font-weight: 500;
   flex: 1;
-  padding: 24px;
 }
 
 .status-online {
@@ -675,7 +681,7 @@ input {
   border-radius: 20px;
   background: var(--accent-glow);
   color: var(--accent);
-  border: 0.5px solid rgba(127, 119, 221, 0.3);
+  border: 0.5px solid rgba(157, 110, 255, 0.3);
 }
  
 .topbar-actions {
@@ -773,7 +779,7 @@ input {
  
 .msg-avatar.ai {
   background: var(--accent-glow);
-  border: 0.5px solid rgba(127, 119, 221, 0.3);
+  border: 0.5px solid rgba(157, 110, 255, 0.3);
   color: var(--accent);
 }
  
@@ -931,7 +937,7 @@ input {
 }
  
 .input-area {
-  padding: 12px 20px 18px;
+  padding: 14px 20px 14px;
   background: var(--surface);
   border-top: 0.5px solid var(--border);
   flex-shrink: 0;
@@ -949,7 +955,7 @@ input {
 }
  
 .input-bar:focus-within {
-  border-color: rgba(127, 119, 221, 0.5);
+  border-color: rgba(157, 110, 255, 0.5);
 }
  
 .input-bar textarea {
@@ -1055,7 +1061,7 @@ input {
 
 .toast button:hover { opacity: 1; }
 
-.toast--success { background: #0f1f0a; border-color: rgba(200, 245, 96, 0.3); color: var(--accent); }
+.toast--success { background: #0D0620; border-color: rgba(157, 110, 255, 0.35); color: var(--accent); }
 .toast--error { background: #1f0a0a; border-color: rgba(245, 96, 96, 0.3); color: var(--red); }
 .toast--info { background: var(--surface); border-color: var(--border); color: var(--text-muted); }
 
