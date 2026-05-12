@@ -48,3 +48,10 @@ export async function searchDocuments(query, nResults = 5) {
   const params = new URLSearchParams({ q: query, n_results: nResults });
   return request(`/documents/search?${params}`);
 }
+
+export async function listDocuments(sourceName = null) {
+  const params = sourceName
+    ? new URLSearchParams({ source_name: sourceName })
+    : null;
+  return request(`/documents${params ? `?${params}` : ""}`);
+}
