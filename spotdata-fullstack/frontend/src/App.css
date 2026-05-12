@@ -1063,24 +1063,119 @@ input {
 .toast--error { background: #1f0a0a; border-color: rgba(245, 96, 96, 0.3); color: var(--red); }
 .toast--info { background: var(--surface); border-color: var(--border); color: var(--text-muted); }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .main-inner {
+/* ── Hamburger (oculto no desktop) ───────────────────────────────────────── */
+.hamburger-btn {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 20px;
+  transition: all 0.12s;
+  flex-shrink: 0;
+}
+
+.hamburger-btn:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+/* ── Overlay ─────────────────────────────────────────────────────────────── */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 199;
+  backdrop-filter: blur(2px);
+}
+
+/* ── Tablet ──────────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .shell {
+    grid-template-columns: 200px 1fr;
+  }
+}
+
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .shell {
     grid-template-columns: 1fr;
   }
 
   .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+
+  .sidebar--open {
+    transform: translateX(0);
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.5);
+  }
+
+  .hamburger-btn {
+    display: flex;
+  }
+
+  .model-badge {
     display: none;
   }
 
-  .header {
-    gap: 12px;
-    padding: 0 16px;
+  .topbar {
+    padding: 0 12px;
   }
 
-  .brand-version { display: none; }
-
-  .main {
+  .messages {
     padding: 16px;
+    gap: 16px;
+  }
+
+  .bubble {
+    max-width: 88%;
+  }
+
+  .suggestions {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 0 16px 12px;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .suggestions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .suggestion {
+    flex-shrink: 0;
+  }
+
+  .input-area {
+    padding: 10px 12px 14px;
+  }
+
+  .send-btn,
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .main-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .brand-version {
+    display: none;
   }
 }

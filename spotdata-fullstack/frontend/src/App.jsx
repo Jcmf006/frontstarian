@@ -4,49 +4,53 @@ import "./App.css";
 
 // ── Sidebar ──────────────────────────────────────────────────────────────────
 
-function Sidebar({ chats, activeChat, onSelectChat, onNewChat, user }) {
+function Sidebar({ chats, activeChat, onSelectChat, onNewChat, user, isOpen, onClose }) {
   return (
-    <div className="sidebar">
-      <div className="sidebar-header">
-        <div className="brand">
-          <div className="brand-dot" />
-          <span className="brand-name">SpotData</span>
-          <span className="brand-ver">v0.1</span>
+    <>
+      {isOpen && <div className="sidebar-overlay" onClick={onClose} />}
+      <div className={`sidebar ${isOpen ? "sidebar--open" : ""}`}>
+        <div className="sidebar-header">
+          <div className="brand">
+            <div className="brand-dot" />
+            <span className="brand-name">SpotData</span>
+            <span className="brand-ver">v0.1</span>
+          </div>
+          <button className="new-chat-btn" onClick={onNewChat}>
+            Nova conversa
+          </button>
         </div>
-        <button className="new-chat-btn" onClick={onNewChat}>
-          <span>+</span> nova conversa
-        </button>
+
+        <div className="sidebar-section">Conversas</div>
+
+        {chats.map((chat) => (
+          <div
+            key={chat.id}
+            className={`chat-item ${activeChat === chat.id ? "active" : ""}`}
+            onClick={() => { onSelectChat(chat); onClose(); }}
+          >
+            {chat.title}
+          </div>
+        ))}
+
+        <div className="sidebar-footer">
+          <div className="user-row">
+            <div className="avatar">{user.initials}</div>
+            <span className="user-name">{user.name}</span>
+            <div className="status-online" />
+          </div>
+        </div>
       </div>
-
-      <div className="sidebar-section">Conversas</div>
-
-      {chats.map((chat) => (
-        <div
-          key={chat.id}
-          className={`chat-item ${activeChat === chat.id ? "active" : ""}`}
-          onClick={() => onSelectChat(chat)}
-        >
-          {chat.title}
-        </div>
-      ))}
-
-      <div className="sidebar-footer">
-        <div className="user-row">
-          <div className="avatar">{user.initials}</div>
-          <span className="user-name">{user.name}</span>
-          <div className="status-online" />
-        </div>
-      </div>
-    </div>
+    </>
   );
 }
 
 // ── Topbar ───────────────────────────────────────────────────────────────────
 
-function Topbar({ title, apiStatus }) {
+function Topbar({ title, apiStatus, onToggleSidebar }) {
   return (
     <div className="topbar">
       <div className="topbar-left">
+        <button className="hamburger-btn" onClick={onToggleSidebar} aria-label="Menu">☰</button>
         <span className="topbar-title">{title}</span>
         <span className="model-badge">chromadb</span>
         <span
@@ -481,11 +485,12 @@ const sendText = (text) => {
 
 export default function App() {
   const { toasts, toast, remove } = useToast();
-  const [chats, setChats]         = useState(INITIAL_CHATS);
+  const [chats, setChats]           = useState(INITIAL_CHATS);
   const [activeChat, setActiveChat] = useState(1);
   const [chatTitle, setChatTitle]   = useState("Busca relatório Q1");
   const [apiStatus, setApiStatus]   = useState("checking");
   const [input, setInput]           = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const inputRef                    = useRef();
 
   const { messages, typing, mode, sendText, onSuggestion, onResult } = useChatLogic(toast);
@@ -538,10 +543,12 @@ export default function App() {
         onSelectChat={handleSelectChat}
         onNewChat={handleNewChat}
         user={{ name: "Rafael", initials: "RF" }}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
       <div className="main">
-        <Topbar title={chatTitle} apiStatus={apiStatus} />
+        <Topbar title={chatTitle} apiStatus={apiStatus} onToggleSidebar={() => setSidebarOpen(p => !p)} />
 
         <Messages messages={messages} />
 
