@@ -14,7 +14,7 @@ function Sidebar({ chats, activeChat, onSelectChat, onNewChat, user }) {
           <span className="brand-ver">v0.1</span>
         </div>
         <button className="new-chat-btn" onClick={onNewChat}>
-          Nova conversa
+          <span>+</span> nova conversa
         </button>
       </div>
 
@@ -237,6 +237,81 @@ function TextSection({ onResult, toast }) {
   );
 }
 
+// ── ListSection ───────────────────────────────────────────────────────────────
+
+function ListSection({ onResult, toast }) {
+  const [filter, setFilter] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    setLoading(true);
+    try {
+      const res = await listDocuments(filter.trim() || null);
+      const docs = res.documents ?? res.results ?? [];
+
+      if (!docs.length) {
+        onResult("Nenhum documento indexado encontrado.");
+        return;
+      }
+
+      const rows = docs.map((d, i) => {
+        const typeClass =
+          d.content_type?.toLowerCase() === "pdf"  ? "b-purple" :
+          d.content_type?.toLowerCase() === "foto" ? "b-amber"  : "b-teal";
+        const typeLabel =
+          { pdf: "PDF", foto: "IMG", texto: "TXT" }[d.content_type?.toLowerCase()] || "?";
+        const date = d.created_at
+          ? new Date(d.created_at).toLocaleDateString("pt-BR")
+          : "—";
+        const version = d.version ?? (i + 1);
+
+        return `
+          <div class="result-card">
+            <div class="rc-header">
+              <span class="badge ${typeClass}">${typeLabel}</span>
+              <span class="rc-source">${d.source_name || "—"}</span>
+              <span class="rc-dist" style="margin-left:auto">v${version}</span>
+              <span class="rc-dist">${date}</span>
+            </div>
+            <div class="rc-excerpt" style="font-size:11px;opacity:0.55">
+              ID: ${d.id?.slice(0, 8) ?? "—"}…
+            </div>
+          </div>`;
+      }).join("");
+
+      onResult(
+        `<strong>${docs.length} documento${docs.length !== 1 ? "s" : ""}</strong> indexado${docs.length !== 1 ? "s" : ""}:` +
+        `<div class="results-list">${rows}</div>`
+      );
+    } catch (e) {
+      toast(e.message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+      <input
+        className="input"
+        placeholder="filtrar por fonte (opcional)…"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && submit()}
+        style={{ flex: 1 }}
+      />
+      <button
+        className="send-btn"
+        onClick={submit}
+        disabled={loading}
+        style={{ borderRadius: "8px" }}
+      >
+        {loading ? <span className="spinner" /> : "📋"}
+      </button>
+    </div>
+  );
+}
+
 // ── SearchSection ───────────────────────────────────────────────────────────────
 
 function SearchSection({ onResult, toast }) {
@@ -344,9 +419,10 @@ const INITIAL_MESSAGE = {
 };
 
 const SUGGESTIONS = [
-  { label: "🔍 buscar documento",  action: "search" },
-  { label: "📄 fazer upload",      action: "upload" },
-  { label: "✏️ indexar texto",     action: "text"   },
+  { label: "🔍 buscar documento", action: "search" },
+  { label: "📄 fazer upload",     action: "upload" },
+  { label: "✏️ indexar texto",    action: "text"   },
+  { label: "📋 listar arquivos",  action: "list"   }, 
 ];
 
 function useChatLogic(toast) {
@@ -367,7 +443,7 @@ function useChatLogic(toast) {
     }, 700);
   };
 
-  const sendText = (text) => {
+const sendText = (text) => {
     if (!text.trim()) return;
     addMsg(`<p>${text}</p>`, "user");
 
@@ -380,13 +456,16 @@ function useChatLogic(toast) {
     } else if (/busca|procur|encontr|search/i.test(text)) {
       aiReply("Tudo certo! Use o campo abaixo para buscar nos documentos indexados:");
       setMode("search");
+    } else if (/list|listar|versão|versoes|documentos|todos/i.test(text)) {
+      aiReply("Aqui estão os documentos indexados:");
+      setMode("list");
     } else {
       aiReply(`Não entendi muito bem. Posso <strong>buscar documentos</strong>, <strong>indexar textos</strong> ou receber <strong>uploads</strong>. O que prefere?`);
     }
   };
 
   const onSuggestion = (action) => {
-    const labels = { search: "quero buscar um documento", upload: "quero fazer upload", text: "quero indexar um texto" };
+    const labels = { search: "quero buscar um documento", upload: "quero fazer upload", text: "quero indexar um texto", list:"listar todos os documentos",};
     sendText(labels[action]);
   };
 
@@ -490,6 +569,12 @@ export default function App() {
         {mode === "text" && (
           <div style={{ padding: "0 24px 12px" }}>
             <TextSection onResult={onResult} toast={toast} />
+          </div>
+        )}
+
+        {mode === "list" && (
+          <div style={{ padding: "0 24px 12px" }}>
+            <ListSection onResult={onResult} toast={toast} />
           </div>
         )}
 
