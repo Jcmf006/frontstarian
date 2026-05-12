@@ -109,7 +109,7 @@ input {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #5B2D91;
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
@@ -135,20 +135,19 @@ input {
   padding: 8px 12px;
   border-radius: var(--r-sm);
   border: 0.5px solid rgba(157, 110, 255, 0.4);
-  background: var(--surface3);
+  background: #5B2D91;
   font-size: 13px;
-  color: var(--text);
+  color: #fff;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   transition: all 0.15s;
-  text-transform: capitalize;
 }
 
 .new-chat-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  opacity: 0.85;
 }
 
 .sidebar-section {
@@ -210,7 +209,7 @@ input {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #5B2D91;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -260,7 +259,7 @@ input {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #5B2D91;
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
@@ -545,20 +544,19 @@ input {
   padding: 8px 12px;
   border-radius: var(--r-sm);
   border: 0.5px solid rgba(157, 110, 255, 0.4);
-  background: var(--surface3);
+  background: #5B2D91;
   font-size: 13px;
-  color: var(--text);
+  color: #fff;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   transition: all 0.15s;
-  text-transform: capitalize;
 }
 
 .new-chat-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  opacity: 0.85;
 }
 
 .sidebar-section {
@@ -620,7 +618,7 @@ input {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #5B2D91;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -827,7 +825,7 @@ input {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #5B2D91;
   opacity: 0.4;
   animation: blink 1.3s infinite;
 }
@@ -1006,7 +1004,7 @@ input {
   height: 30px;
   border-radius: 8px;
   border: none;
-  background: var(--accent);
+  background: #5B2D91;
   cursor: pointer;
   display: flex;
   align-items: center;
