@@ -1,6 +1,44 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useEditor, useEditorState, EditorContent } from "@tiptap/react";
+import { generateHTML, generateJSON } from "@tiptap/core";
+import StarterKit from "@tiptap/starter-kit";
 import { healthCheck, uploadFile, ingestText, searchDocuments, listDocuments } from "./api.js";
 import "./App.css";
+
+const TIPTAP_EXTENSIONS = [StarterKit];
+
+// Mensagens com markup de card (renderizado no servidor) precisam ignorar o
+// Tiptap — o StarterKit remove tags/classes desconhecidas. Faz o parse do
+// HTML e procura pelos containers de card; cobre aspas simples/duplas,
+// múltiplas classes no atributo e ordem arbitrária dos atributos.
+const CARD_SELECTOR = ".result-card, .results-list";
+const hasCustomCardMarkup = (() => {
+  if (typeof DOMParser === "undefined") {
+    return (html = "") => /\b(result-card|results-list)\b/.test(html);
+  }
+  const parser = new DOMParser();
+  return (html = "") => {
+    if (!html) return false;
+    const doc = parser.parseFromString(`<body>${html}</body>`, "text/html");
+    return !!doc.body.querySelector(CARD_SELECTOR);
+  };
+})();
+
+// Sanitiza o HTML da mensagem passando pelo schema do Tiptap uma única vez
+// por conteúdo, sem instanciar um editor por mensagem.
+const sanitizeViaTiptap = (html) => {
+  try {
+    const json = generateJSON(html, TIPTAP_EXTENSIONS);
+    return generateHTML(json, TIPTAP_EXTENSIONS);
+  } catch {
+    return html;
+  }
+};
+
+const STRUCTURAL_NODES = new Set([
+  "listItem", "orderedList", "bulletList",
+  "blockquote", "codeBlock", "taskItem", "taskList",
+]);
 
 // ── Sidebar ──────────────────────────────────────────────────────────────────
 
@@ -84,6 +122,17 @@ function Topbar({ title, apiStatus, onToggleSidebar }) {
   );
 }
 
+function MessageBubble({ content }) {
+  // Memoiza a sanitização por conteúdo: nunca reprocessa a mesma mensagem
+  // duas vezes nem cria um editor por bubble.
+  const html = useMemo(() => {
+    if (!content) return "";
+    return hasCustomCardMarkup(content) ? content : sanitizeViaTiptap(content);
+  }, [content]);
+
+  return <div className="bubble" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+
 function Messages({ messages }) {
   const bottomRef = useRef(null);
 
@@ -98,10 +147,7 @@ function Messages({ messages }) {
           <div className={`msg-avatar ${msg.role === "user" ? "uav" : "ai"}`}>
             {msg.role === "user" ? "RF" : "SD"}
           </div>
-          <div
-            className="bubble"
-            dangerouslySetInnerHTML={{ __html: msg.content }}
-          />
+          <MessageBubble content={msg.content} />
         </div>
       ))}
       <div ref={bottomRef} />
@@ -549,6 +595,86 @@ function FilesScreen({ onSuggestion, toast }) {
   );
 }
 
+// ── ChatInput (Tiptap) ────────────────────────────────────────────────────────
+
+function ChatInput({ onSend, onAttach }) {
+  const editorRef = useRef(null);
+  const onSendRef = useRef(onSend);
+
+  useEffect(() => { onSendRef.current = onSend; }, [onSend]);
+
+  const editor = useEditor({
+    extensions: TIPTAP_EXTENSIONS,
+    content: "",
+    editorProps: {
+      attributes: { class: "chat-editor" },
+      handleKeyDown(view, event) {
+        if (event.key !== "Enter" || event.shiftKey) return false;
+
+        const { $from } = view.state.selection;
+        for (let depth = $from.depth; depth > 0; depth--) {
+          if (STRUCTURAL_NODES.has($from.node(depth).type.name)) {
+            return false;
+          }
+        }
+
+        const ed = editorRef.current;
+        if (!ed || ed.isEmpty) return false;
+
+        event.preventDefault();
+        const html = ed.getHTML();
+        onSendRef.current(html);
+        ed.commands.clearContent(true);
+        ed.commands.focus();
+        return true;
+      },
+    },
+  });
+
+  useEffect(() => { editorRef.current = editor; }, [editor]);
+
+  const isEmpty = useEditorState({
+    editor,
+    selector: ({ editor }) => !editor || editor.isEmpty,
+  }) ?? true;
+
+  const handleSendClick = () => {
+    const ed = editorRef.current;
+    if (!ed || ed.isEmpty) return;
+    onSendRef.current(ed.getHTML());
+    ed.commands.clearContent(true);
+    ed.commands.focus();
+  };
+
+  return (
+    <div className="input-area">
+      <div className="input-bar">
+        <div className="chat-editor-wrap">
+          {isEmpty && (
+            <span className="chat-editor-placeholder">
+              Pergunte algo ou envie um documento…
+            </span>
+          )}
+          <EditorContent editor={editor} />
+        </div>
+        <div className="input-actions">
+          <button className="attach-btn" aria-label="Anexar" onClick={onAttach}>
+            📎
+          </button>
+          <button
+            className="send-btn"
+            onClick={handleSendClick}
+            disabled={isEmpty}
+            aria-label="Enviar"
+          >
+            ↑
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── useToast ──────────────────────────────────────────────────────────────────
 
 function useToast() {
@@ -619,20 +745,27 @@ function useChatLogic(toast) {
     }, 700);
   };
 
-const sendText = (text) => {
-    if (!text.trim()) return;
-    addMsg(`<p>${text}</p>`, "user");
+const sendText = (input) => {
+    // Aceita tanto string simples quanto HTML vindo do editor Tiptap.
+    const isHtml = typeof input === "string" && /<[a-z][^>]*>/i.test(input);
+    const html = isHtml ? input : `<p>${input}</p>`;
+    const plain = isHtml
+      ? input.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+      : input.trim();
+    if (!plain) return;
 
-    if (/upload|arquivo|enviar|anexar/i.test(text)) {
+    addMsg(html, "user");
+
+    if (/upload|arquivo|enviar|anexar/i.test(plain)) {
       aiReply("Claro! Use o painel abaixo para selecionar o arquivo:");
       setMode("upload");
-    } else if (/index|texto|ingest/i.test(text)) {
+    } else if (/index|texto|ingest/i.test(plain)) {
       aiReply("Perfeito! Cole o texto abaixo e eu processo pra você:");
       setMode("text");
-    } else if (/busca|procur|encontr|search/i.test(text)) {
+    } else if (/busca|procur|encontr|search/i.test(plain)) {
       aiReply("Tudo certo! Use o campo abaixo para buscar nos documentos indexados:");
       setMode("search");
-    } else if (/list|listar|versão|versoes|documentos|todos/i.test(text)) {
+    } else if (/list|listar|versão|versoes|documentos|todos/i.test(plain)) {
       aiReply("Aqui estão os documentos indexados:");
       setMode("list");
     } else {
@@ -661,10 +794,8 @@ export default function App() {
   const [activeChat, setActiveChat] = useState(1);
   const [chatTitle, setChatTitle]   = useState("Busca relatório Q1");
   const [apiStatus, setApiStatus]   = useState("checking");
-  const [input, setInput]           = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filesOpen, setFilesOpen]     = useState(false);
-  const inputRef                    = useRef();
 
   const { messages, typing, mode, sendText, onSuggestion, onResult } = useChatLogic(toast);
 
@@ -673,20 +804,6 @@ export default function App() {
       .then(() => setApiStatus("online"))
       .catch(() => setApiStatus("offline"));
   }, []);
-
-  const handleSend = () => {
-    if (!input.trim()) return;
-    sendText(input);
-    setInput("");
-    if (inputRef.current) inputRef.current.style.height = "auto";
-  };
-
-  const handleKey = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
 
   const handleNewChat = () => {
     const id = Date.now();
@@ -699,11 +816,6 @@ export default function App() {
   const handleSelectChat = (chat) => {
     setActiveChat(chat.id);
     setChatTitle(chat.title);
-  };
-
-  const autoResize = (el) => {
-    el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 120) + "px";
   };
 
   const handleFilesAction = (action) => {
@@ -765,26 +877,10 @@ export default function App() {
           </div>
         )}
 
-        <div className="input-area">
-          <div className="input-bar">
-            <textarea
-              ref={inputRef}
-              rows={1}
-              placeholder="Pergunte algo ou envie um documento…"
-              value={input}
-              onChange={(e) => { setInput(e.target.value); autoResize(e.target); }}
-              onKeyDown={handleKey}
-            />
-            <div className="input-actions">
-              <button className="attach-btn" aria-label="Anexar" onClick={() => onSuggestion("upload")}>
-                📎
-              </button>
-              <button className="send-btn" onClick={handleSend} disabled={!input.trim()} aria-label="Enviar">
-                ↑
-              </button>
-            </div>
-          </div>
-        </div>
+        <ChatInput
+          onSend={(html) => sendText(html)}
+          onAttach={() => onSuggestion("upload")}
+        />
 
         {filesOpen && (
           <div className="files-modal-backdrop" onClick={() => setFilesOpen(false)}>
