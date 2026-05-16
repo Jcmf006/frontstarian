@@ -1499,8 +1499,7 @@ input {
 }
 
 /* ===== files modal responsive ===== */
-  }
-
+@media (max-width: 640px) {
   .files-modal {
     border-radius: 0;
   }
@@ -1509,3 +1508,142 @@ input {
     padding: 5px 8px;
     font-size: 11px;
   }
+}
+
+/* ===== Tiptap (ProseMirror) ===== */
+.chat-editor-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 22px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.chat-editor-wrap .ProseMirror {
+  outline: none;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 22px;
+}
+
+.chat-editor-wrap .ProseMirror p {
+  margin: 0;
+}
+
+.chat-editor-wrap .ProseMirror p + p {
+  margin-top: 6px;
+}
+
+.chat-editor-placeholder {
+  position: absolute;
+  inset: 0;
+  color: var(--hint);
+  font-size: 14px;
+  line-height: 1.5;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ===== Elementos de texto rico ===== */
+/* O bubble renderiza HTML cru (sem o wrapper .ProseMirror); o editor usa
+   ProseMirror. O :is() permite os dois compartilharem as mesmas regras
+   sem duplicação. */
+
+.bubble .ProseMirror,
+.bubble {
+  /* resets compartilhados da superfície do bubble */
+}
+
+.chat-editor-wrap .ProseMirror {
+  outline: none;
+  border: none;
+  background: transparent;
+}
+
+:is(.chat-editor-wrap .ProseMirror, .bubble) > p { margin: 0; }
+:is(.chat-editor-wrap .ProseMirror, .bubble) > p + p { margin-top: 8px; }
+
+.bubble > strong,
+.bubble :is(p, li, h1, h2, h3, blockquote) strong {
+  color: var(--accent);
+  font-weight: 500;
+}
+.msg.user .bubble > strong,
+.msg.user .bubble :is(p, li, h1, h2, h3, blockquote) strong {
+  color: #B5D4F4;
+}
+
+:is(.chat-editor-wrap .ProseMirror, .bubble) ul,
+:is(.chat-editor-wrap .ProseMirror, .bubble) ol {
+  padding-left: 22px;
+  margin: 6px 0;
+}
+
+:is(.chat-editor-wrap .ProseMirror, .bubble) ul { list-style: disc; }
+:is(.chat-editor-wrap .ProseMirror, .bubble) ol { list-style: decimal; }
+
+:is(.chat-editor-wrap .ProseMirror, .bubble) li { margin: 2px 0; }
+:is(.chat-editor-wrap .ProseMirror, .bubble) li > p { margin: 0; }
+
+:is(.chat-editor-wrap .ProseMirror, .bubble) h1 {
+  font-size: 1.4em;
+  font-weight: 600;
+  margin: 10px 0 4px;
+  line-height: 1.3;
+}
+
+:is(.chat-editor-wrap .ProseMirror, .bubble) h2 {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin: 10px 0 4px;
+  line-height: 1.3;
+}
+
+:is(.chat-editor-wrap .ProseMirror, .bubble) h3 {
+  font-size: 1.05em;
+  font-weight: 600;
+  margin: 8px 0 4px;
+  line-height: 1.3;
+}
+
+:is(.chat-editor-wrap .ProseMirror, .bubble) blockquote {
+  border-left: 3px solid var(--border3);
+  padding-left: 10px;
+  margin: 6px 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+:is(.chat-editor-wrap .ProseMirror, .bubble) hr {
+  border: none;
+  border-top: 0.5px solid var(--border2);
+  margin: 10px 0;
+}
+
+:is(.chat-editor-wrap .ProseMirror, .bubble) code {
+  background: var(--surface3);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.92em;
+}
+
+:is(.chat-editor-wrap .ProseMirror, .bubble) pre {
+  background: var(--surface3);
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin: 6px 0;
+  overflow-x: auto;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.9em;
+}
+
+:is(.chat-editor-wrap .ProseMirror, .bubble) pre code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: 1em;
+}
